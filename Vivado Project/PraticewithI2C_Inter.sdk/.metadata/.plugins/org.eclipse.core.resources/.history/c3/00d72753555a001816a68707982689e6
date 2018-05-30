@@ -1,0 +1,886 @@
+// Include Files
+#include "xparameters.h"
+#include "xgpio.h"
+#include "xscugic.h"
+#include "xil_exception.h"
+#include "sleep.h"
+#include "stdio.h"
+
+//Buzzer addition
+#include "xgpiops.h"
+XGpioPs Gpio;
+int Status;
+XGpioPs_Config *GPIOConfigPtr;
+#define ledpin 13
+
+//SD Card addition
+#include "xsdps.h"
+#include "xil_printf.h"
+#include "ff.h"
+#include "xil_cache.h"
+
+//Hexapod Robot Control
+#include "joint_controls.h"
+
+//IMU MPU-6050
+#include "interrupt.h"
+#include "i2c.h"
+#include "imu.h"
+#include "MPU6050.h"
+
+//IMU 6050 Variable
+float Roll,Pitch,Yaw;
+
+//SD Card addition start
+static FATFS FS_instance; // File System instance
+static FIL file1;		// File instance
+FRESULT result;			// FRESULT variable
+static char FileName[32] = "WaCo_1.txt"; // name of the log
+static char *Log_File; // pointer to the log
+char *Path = "0:/";  //  string pointer to the logical drive number
+unsigned int BytesWr; // Bytes written
+int len=0;			// length of the string
+int accum=0;//  variable holding the EOF
+char Buffer_logger[256] __attribute__ ((aligned(32))); // Buffer should be word aligned (multiple of 4)
+u32 Buffer_size = 256;
+//SD Card addition end
+
+//IK Viarables
+const float C=7.5; //coxa
+const float F=5.6; //femur
+const float T=7.5; // tibia
+const float z_off = 8;
+const float pi = 3.14;
+float alpha,beta,gramma;
+float L, L1;
+
+//Sixpod Viarables
+int speed = 300; // 1-2 use 300 tripod use 150 wavegait use 120
+int lpdelay1 = 5;
+int lpdelay2 = 4;
+int lpdelay3 = 5;  //5*30 =150 msec
+int timedelay = 30000; // 30ms.
+int j = 1;
+int torque = 500; // 1-2 use 500 Wavegait use 300
+int IDCoxa[10] = {1,4,7,10,13,16}; //ID Motor Coxa- Joint
+int IDFemur[10] = {2,5,8,11,14,17}; //ID Motor Femur- Joint
+int IDTibia[10] = {3,6,9,12,15,18};	//ID Motor Tibia- Joint
+double TorqueValue[20] ;
+
+//Neural Network Viarables
+int surface_type = 1; // Class Neural Network
+
+//---------------------- Function ------------------------------
+
+//Squre Functiontimedelay
+int sq(float x)
+{
+	x = x*x;
+	return x;
+}
+
+//Inverse Kinematic Function
+void trigono_alpha_beta_gramma(float x, float y, float z)
+{
+  alpha=x;
+  beta=y;
+  gramma=z;
+}
+
+//Control Legs
+void SetPositions(int leg)
+{
+
+  if(leg == 1)
+  {
+	  JointSetGoalPosition(1,alpha);
+	  JointSetGoalPosition(2,beta);
+	  JointSetGoalPosition(3,gramma);
+  }
+
+  else if(leg == 2)
+  {
+  //Dxl.writeByte(1,Torque_Enable,1);
+	  JointSetGoalPosition(4,alpha);
+	  JointSetGoalPosition(5,beta);
+	  JointSetGoalPosition(6,gramma);
+  }
+
+  else if(leg == 3)
+  {
+  //Dxl.writeByte(4,Torque_Enable,1);
+	  JointSetGoalPosition(7,alpha);
+	  JointSetGoalPosition(8,beta);
+	  JointSetGoalPosition(9,gramma);
+  }
+
+  else if(leg ==4)
+  {
+  //Dxl.writeByte(7,Torque_Enable,1);
+	  JointSetGoalPosition(10,1023-alpha);
+	  JointSetGoalPosition(11,1023-beta);
+	  JointSetGoalPosition(12,1023-gramma);
+  }
+
+  else if(leg == 5)
+  {
+  //Dxl.writeByte(10,Torque_Enable,1);
+	  JointSetGoalPosition(13,1023-alpha);
+	  JointSetGoalPosition(14,1023-beta);
+	  JointSetGoalPosition(15,1023-gramma);
+  }
+
+  else if(leg ==6)
+  {
+  //Dxl.writeByte(13,Torque_Enable,1);
+	  JointSetGoalPosition(16,1023-alpha);
+	  JointSetGoalPosition(17,1023-beta);
+	  JointSetGoalPosition(18,1023-gramma);
+  }
+}
+
+// Function save text file to SD Card
+
+int Save2SD() {
+
+			sprintf(Buffer_logger, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %.2f %.2f %.2f %d \r\n"
+					,TorqueValue[1],TorqueValue[2],TorqueValue[3],TorqueValue[4],TorqueValue[5],TorqueValue[6]
+					,TorqueValue[7],TorqueValue[8],TorqueValue[9],TorqueValue[10],TorqueValue[11],TorqueValue[12]
+					,TorqueValue[13],TorqueValue[14],TorqueValue[15],TorqueValue[16],TorqueValue[17],TorqueValue[18]
+					,Yaw,Pitch,Roll,surface_type);
+
+			// Open log for writing
+				Log_File = (char *)FileName;
+				result = f_open(&file1, Log_File,FA_WRITE);
+
+				if (result!=0)
+					{
+					return XST_FAILURE;
+					}
+
+			// Point to the end of log
+					result = f_lseek(&file1,accum);
+					if (result!=0)
+					{
+					return XST_FAILURE;
+					}
+
+			// Write to log
+					result = f_write(&file1, (const void*)Buffer_logger, Buffer_size,&BytesWr);
+					if (result!=0)
+					{
+					return XST_FAILURE;
+					}
+
+			// Increment file EOF pointer
+					len = strlen(Buffer_logger);
+					accum=accum+len;
+
+			 //Close file.
+					result = f_close(&file1);
+					if (result!=0)
+					{
+					return XST_FAILURE;
+					}
+
+					//xil_printf("Data written to log Successfully %d \r\n",i);
+					//sleep(1);
+}
+
+// end function save to SD card
+
+// Function Read IMU
+void ReadIMU (){
+
+		int status;
+		status = Imu.readFifoBuffer();
+		if (status == XST_SUCCESS) {
+				//xil_printf("ypr: ");
+				//prinfloat(Imu.ypr[0] * 180 / M_PI);
+				//xil_printf(", ");
+				//prinfloat(Imu.ypr[1] * 180 / M_PI);
+				//xil_printf(", ");
+				//prinfloat(Imu.ypr[2] * 180 / M_PI);
+				//xil_printf("\r\n");
+				Yaw = (Imu.ypr[0] * 180 / M_PI);
+				Pitch = (Imu.ypr[1] * 180 / M_PI);
+				Roll = (Imu.ypr[2] * 180 / M_PI);
+			}
+
+}
+
+// Function Read Toque
+void ReadToque (int loop){
+
+	for(int i=1;i<=loop;i++){
+
+		//Read Torque (ID)
+		for(int j=1;j<=18;j++)
+		{
+			TorqueValue[j] = JointGetLoad(j);
+			if(TorqueValue[j] >= 2048){
+				TorqueValue[j] = 0; // Reset Torque Error Motor
+			}
+			if(TorqueValue[j] >= 1023){
+				TorqueValue[j] = TorqueValue[j] - 1023; // Present Load map to 0 - 1023
+			}
+
+			TorqueValue[j] =TorqueValue[j]/1023;
+		}
+
+				ReadIMU(); //Read Gyro
+				Save2SD(); //Save to SD Card
+				usleep(timedelay); //***delay step motor
+				}
+}
+
+
+//Function Wavegait1
+void step_Wave_Gait1(int i)
+{
+   if(i==1)
+   {
+  trigono_alpha_beta_gramma(557,550,350);  // LEG 1  sky 1
+  SetPositions(j);
+  trigono_alpha_beta_gramma(579,635,518);  // LEG 5  ground 4 max back
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(536,635,518);  // LEG 3  ground 3
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(493,635,518);  // LEG 4  ground 2
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(450,635,518);  // LEG 2  ground 1 max font
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(471,550,350);  // LEG 6  sky 2
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+
+      if(i==2)
+   {
+  trigono_alpha_beta_gramma(471,550,350);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(557,550,350);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(579,635,518);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(536,635,518);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(493,635,518);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(450,635,518);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+
+         if(i==3)
+   {
+  trigono_alpha_beta_gramma(450,635,518);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(471,550,350);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(557,550,350);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(579,635,518);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(536,635,518);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(493,635,518);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+
+         if(i==4)
+   {
+  trigono_alpha_beta_gramma(493,635,518);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(450,635,518);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(471,550,350);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(557,550,350);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(579,635,518);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(536,635,518);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+         if(i==5)
+   {
+  trigono_alpha_beta_gramma(536,635,518);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(493,635,518);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(450,635,518);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(471,550,350);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(557,550,350);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(579,635,518);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+         if(i==6)
+   {
+  trigono_alpha_beta_gramma(579,635,518);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(536,635,518);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(493,635,518);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(450,635,518);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(471,550,350);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(557,550,350);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+}
+
+
+//Function Wavegait2
+void step_Wave_Gait2(int i)
+{
+	 if(i==1)
+	   {
+	  trigono_alpha_beta_gramma(548,300,250);  // LEG 1  sky 1
+	  SetPositions(j);
+	  trigono_alpha_beta_gramma(560,650,518);  // LEG 5  ground 4 max back
+	  SetPositions(j+4);
+	  trigono_alpha_beta_gramma(537,650,518);  // LEG 3  ground 3
+	  SetPositions(j+2);
+	  trigono_alpha_beta_gramma(493,650,518);  // LEG 4  ground 2
+	  SetPositions(j+3);
+	  trigono_alpha_beta_gramma(470,650,518);  // LEG 2  ground 1 max font
+	  SetPositions(j+1);
+	  trigono_alpha_beta_gramma(482,300,250);  // LEG 6  sky 2
+	  SetPositions(j+5);
+	  ReadToque (lpdelay3);
+	   }
+
+	      if(i==2)
+	   {
+	  trigono_alpha_beta_gramma(482,300,250);
+	  SetPositions(j);
+	  trigono_alpha_beta_gramma(548,300,250);
+	  SetPositions(j+4);
+	  trigono_alpha_beta_gramma(560,650,518);
+	  SetPositions(j+2);
+	  trigono_alpha_beta_gramma(537,650,518);
+	  SetPositions(j+3);
+	  trigono_alpha_beta_gramma(493,650,518);
+	  SetPositions(j+1);
+	  trigono_alpha_beta_gramma(470,650,518);
+	  SetPositions(j+5);
+	  ReadToque (lpdelay3);
+	   }
+
+	         if(i==3)
+	   {
+	  trigono_alpha_beta_gramma(470,650,518);
+	  SetPositions(j);
+	  trigono_alpha_beta_gramma(482,300,250);
+	  SetPositions(j+4);
+	  trigono_alpha_beta_gramma(548,300,250);
+	  SetPositions(j+2);
+	  trigono_alpha_beta_gramma(560,650,518);
+	  SetPositions(j+3);
+	  trigono_alpha_beta_gramma(537,650,518);
+	  SetPositions(j+1);
+	  trigono_alpha_beta_gramma(493,650,518);
+	  SetPositions(j+5);
+	  ReadToque (lpdelay3);
+	   }
+
+	         if(i==4)
+	   {
+	  trigono_alpha_beta_gramma(493,650,518);
+	  SetPositions(j);
+	  trigono_alpha_beta_gramma(470,650,518);
+	  SetPositions(j+4);
+	  trigono_alpha_beta_gramma(482,300,250);
+	  SetPositions(j+2);
+	  trigono_alpha_beta_gramma(548,300,250);
+	  SetPositions(j+3);
+	  trigono_alpha_beta_gramma(560,650,518);
+	  SetPositions(j+1);
+	  trigono_alpha_beta_gramma(537,650,518);
+	  SetPositions(j+5);
+	  ReadToque (lpdelay3);
+	   }
+	         if(i==5)
+	   {
+	  trigono_alpha_beta_gramma(537,650,518);
+	  SetPositions(j);
+	  trigono_alpha_beta_gramma(493,650,518);
+	  SetPositions(j+4);
+	  trigono_alpha_beta_gramma(470,650,518);
+	  SetPositions(j+2);
+	  trigono_alpha_beta_gramma(482,300,250);
+	  SetPositions(j+3);
+	  trigono_alpha_beta_gramma(548,300,250);
+	  SetPositions(j+1);
+	  trigono_alpha_beta_gramma(560,650,518);
+	  SetPositions(j+5);
+	  ReadToque (lpdelay3);
+	   }
+	         if(i==6)
+	   {
+	  trigono_alpha_beta_gramma(560,650,518);
+	  SetPositions(j);
+	  trigono_alpha_beta_gramma(537,650,518);
+	  SetPositions(j+4);
+	  trigono_alpha_beta_gramma(493,650,518);
+	  SetPositions(j+2);
+	  trigono_alpha_beta_gramma(450,635,518);
+	  SetPositions(j+3);
+	  trigono_alpha_beta_gramma(482,300,250);
+	  SetPositions(j+1);
+	  trigono_alpha_beta_gramma(548,300,250);
+	  SetPositions(j+5);
+	  ReadToque (lpdelay3);
+	   }
+}
+
+
+//Function Tripod1
+void step_Tripod1(int i)
+{
+
+         if(i==1)
+  {
+  trigono_alpha_beta_gramma(590,635,550);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(590,635,550);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(590,635,550);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(440,550,400);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(440,550,400);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(440,550,400);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+  }
+
+         if(i==2)
+  {
+  trigono_alpha_beta_gramma(440,635,550);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(440,635,550);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(440,635,550);
+  SetPositions(j+5);
+  sleep(0.9);
+  trigono_alpha_beta_gramma(590,550,400);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(590,550,400);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(590,550,400);
+  SetPositions(j+4);
+  ReadToque (lpdelay3);
+  }
+
+         if(i==3)
+  {
+  trigono_alpha_beta_gramma(515,550,400);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(515,550,400);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(515,550,400);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(515,635,550);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(515,635,550);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(515,635,550);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+  }
+
+         if(i==4)
+  {
+  trigono_alpha_beta_gramma(440,550,400);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(440,550,400);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(440,550,400);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(590,635,550);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(590,635,550);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(590,635,550);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+
+       if(i==5)
+   {
+  trigono_alpha_beta_gramma(440,635,550);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(440,635,550);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(440,635,550);
+  SetPositions(j+4);
+  sleep(0.9);
+  trigono_alpha_beta_gramma(590,550,400);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(590,550,400);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(590,550,400);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+
+        if(i==6)
+   {
+  trigono_alpha_beta_gramma(515,635,550);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(515,635,550);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(515,635,550);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(515,550,400);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(515,550,400);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(515,550,400);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+}
+
+
+//Function Tripod2
+void step_Tripod2(int i)
+{
+
+         if(i==1)
+  {
+  trigono_alpha_beta_gramma(557,635,550);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(557,635,550);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(557,635,550);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(473,350,300);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(473,350,300);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(473,350,300);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+  }
+
+         if(i==2)
+  {
+   trigono_alpha_beta_gramma(450,635,550);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(450,635,550);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(450,635,550);
+  SetPositions(j+5);
+  sleep(0.9);
+  trigono_alpha_beta_gramma(557,350,300);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(557,350,300);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(557,350,300);
+  SetPositions(j+4);
+  ReadToque (lpdelay3);
+  }
+
+         if(i==3)
+  {
+  trigono_alpha_beta_gramma(515,350,300);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(515,350,300);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(515,350,300);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(515,635,550);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(515,635,550);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(515,635,550);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+  }
+
+         if(i==4)
+  {
+  trigono_alpha_beta_gramma(473,350,300);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(473,350,300);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(473,350,300);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(557,635,550);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(557,635,550);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(557,635,550);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+
+       if(i==5)
+   {
+  trigono_alpha_beta_gramma(473,635,550);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(473,635,550);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(473,635,550);
+  SetPositions(j+4);
+  sleep(0.9);
+  trigono_alpha_beta_gramma(557,350,300);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(557,350,300);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(557,350,300);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+
+        if(i==6)
+   {
+  trigono_alpha_beta_gramma(515,635,550);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(515,635,550);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(515,635,550);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(515,350,300);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(515,350,300);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(515,350,300);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+}
+
+
+
+// Function Step Back
+void Stepback (int i){
+
+					if(i==1)
+				      	{
+				  		trigono_alpha_beta_gramma(589,635,518);
+				  		SetPositions(j+1);
+				  		trigono_alpha_beta_gramma(550,635,518);
+				  		SetPositions(j+2);
+				  		trigono_alpha_beta_gramma(511,635,518);
+				  		SetPositions(j+3);
+				  		trigono_alpha_beta_gramma(472,635,518);
+				  		SetPositions(j+4);
+				  		trigono_alpha_beta_gramma(433,635,518);
+				  		SetPositions(j+5);
+				  		//ReadToque (lpdelay2);
+				      	}
+				    else if (i==2)
+				    	{
+				  		trigono_alpha_beta_gramma(433,635,518);
+				  		SetPositions(j);
+				  		trigono_alpha_beta_gramma(589,635,518);
+				  		SetPositions(j+2);
+				  		trigono_alpha_beta_gramma(550,635,518);
+				  		SetPositions(j+3);
+				  		trigono_alpha_beta_gramma(511,635,518);
+				  		SetPositions(j+4);
+				  		trigono_alpha_beta_gramma(472,635,518);
+				  		SetPositions(j+5);
+				  		//ReadToque (lpdelay2);
+				    	}
+				    else if (i==3)
+				      	{
+				  		trigono_alpha_beta_gramma(472,635,518);
+				  		SetPositions(j);
+				  		trigono_alpha_beta_gramma(433,635,518);
+				  		SetPositions(j+1);
+				  		trigono_alpha_beta_gramma(589,635,518);
+				  		SetPositions(j+3);
+				  		trigono_alpha_beta_gramma(550,635,518);
+				  		SetPositions(j+4);
+				  		trigono_alpha_beta_gramma(511,635,518);
+				  		SetPositions(j+5);
+				  		//ReadToque (lpdelay2);
+				      	}
+				      else if (i==4)
+				      	{
+					  	trigono_alpha_beta_gramma(511,635,518);
+					  	SetPositions(j);
+					  	trigono_alpha_beta_gramma(472,635,518);
+					  	SetPositions(j+1);
+					  	trigono_alpha_beta_gramma(433,635,518);
+					  	SetPositions(j+2);
+					  	trigono_alpha_beta_gramma(589,635,518);
+					  	SetPositions(j+4);
+					  	trigono_alpha_beta_gramma(550,635,518);
+					  	SetPositions(j+5);
+					  	//ReadToque (lpdelay2);
+				      	}
+				     else if (i==5)
+				        {
+					  	trigono_alpha_beta_gramma(550,635,518);
+					  	SetPositions(j);
+					  	trigono_alpha_beta_gramma(511,635,518);
+					  	SetPositions(j+1);
+					  	trigono_alpha_beta_gramma(472,635,518);
+					  	SetPositions(j+2);
+					  	trigono_alpha_beta_gramma(433,635,518);
+					  	SetPositions(j+3);
+					  	trigono_alpha_beta_gramma(589,635,518);
+					  	SetPositions(j+5);
+					  //ReadToque (lpdelay2);
+				        }
+				      else if (i==6)
+				        {
+					  	trigono_alpha_beta_gramma(589,635,518);
+					  	SetPositions(j);
+					  	trigono_alpha_beta_gramma(550,635,518);
+					  	SetPositions(j+1);
+					  	trigono_alpha_beta_gramma(511,635,518);
+					  	SetPositions(j+2);
+					  	trigono_alpha_beta_gramma(472,635,518);
+					  	SetPositions(j+3);
+					  	trigono_alpha_beta_gramma(433,635,518);
+					  	SetPositions(j+4);
+					  	//ReadToque (lpdelay2);
+				        }
+				}
+
+// end function Step Back.
+
+//**************************** Main ****************************//
+
+int main (void)
+{
+	GPIOConfigPtr = XGpioPs_LookupConfig(XPAR_PS7_GPIO_0_DEVICE_ID);
+
+	Status = XGpioPs_CfgInitialize(&Gpio, GPIOConfigPtr, GPIOConfigPtr ->BaseAddr);
+
+	if (Status != XST_SUCCESS) {
+
+	return XST_FAILURE;
+
+	}
+	XGpioPs_SetDirectionPin(&Gpio, ledpin, 1);
+
+	XGpioPs_SetOutputEnablePin(&Gpio, ledpin, 1);
+
+	 XGpio input, output;
+	   //int button_data = 0;
+	  // int switch_data = 0;
+
+	   XGpio_Initialize(&input, XPAR_AXI_GPIO_0_DEVICE_ID);	//initialize input XGpio variable
+	   XGpio_Initialize(&output, XPAR_AXI_GPIO_1_DEVICE_ID);	//initialize output XGpio variable
+
+	   XGpio_SetDataDirection(&input, 1, 0xF);			//set first channel tristate buffer to input
+	   XGpio_SetDataDirection(&input, 2, 0xF);			//set second channel tristate buffer to input
+
+	   XGpio_SetDataDirection(&output, 1, 0x0);			//set first channel tristate buffer to output
+
+	   XGpio_DiscreteWrite(&output, 1,0xF);
+	// Mount SD Card and initialize device
+	result = f_mount(&FS_instance,Path, 1);
+		if (result != 0) {
+			XGpio_DiscreteWrite(&output, 1,0x1);
+			return XST_FAILURE;
+		}
+  // Creating new file with read/write permissions
+	Log_File = (char *)FileName;
+	result = f_open(&file1, Log_File, FA_CREATE_ALWAYS | FA_WRITE | FA_READ);
+		if (result!= 0) {
+			XGpio_DiscreteWrite(&output, 1,0x2);
+			return XST_FAILURE;
+		}
+
+  // Setup IMU (interrupt pin 12)
+			int intrPin = 12;
+			Imu.setup(intrPin);
+
+//*** Sixpod Setup Start ***
+			XGpio_DiscreteWrite(&output, 1,0x4);
+			//Set Base Positon
+			for(int i =1;i<=18;i++){
+				JointSetGoalTorque(i,1000);
+			}
+			for(int i =1;i<=6;i++){
+				trigono_alpha_beta_gramma(515,635,518); //Base Step
+				SetPositions(i);
+			}
+
+				sleep(2);
+
+	//Enable Torque & Set Speed
+			for(int i =1;i<=18;i++){
+				JointSetMovingSpeed(i,speed);
+				JointTorqueEnable(i);
+				JointSetGoalTorque(i,torque);
+			}
+
+	// wait IMU
+			for(int i=1;i<=5;i++){
+				ReadIMU();
+				XGpioPs_WritePin(&Gpio, ledpin,0);
+				XGpio_DiscreteWrite(&output, 1,0xF);
+				sleep(1);
+				XGpioPs_WritePin(&Gpio, ledpin, 1);
+				XGpio_DiscreteWrite(&output, 1,0x0);
+				sleep(1);
+			}
+//*** End Setup Sixpod ***
+
+// Start Gait Sixpod
+		for(int loop=1;loop<=6;loop++){
+			for(int i=1;i<=6;i++)
+			  {
+			/*	trigono_alpha_beta_gramma(482,593,498); //Step 2
+				SetPositions(i);
+				ReadToque (lpdelay1);
+				trigono_alpha_beta_gramma(450,551,478); //Step 3
+				SetPositions(i);
+				Stepback(i);
+				ReadToque (lpdelay1);
+				trigono_alpha_beta_gramma(422,593,498); //Step 4
+				SetPositions(i);
+				ReadToque (lpdelay1);
+				trigono_alpha_beta_gramma(394,635,518); //Step 5
+				SetPositions(i);
+				ReadToque (lpdelay1);*/
+
+				// B2
+				 		/* 		trigono_alpha_beta_gramma(515,335,218);
+								SetPositions(i);
+								ReadToque (lpdelay1);
+								trigono_alpha_beta_gramma(465,335,218);
+								SetPositions(i);
+								Stepback(i);
+								ReadToque (lpdelay1);
+								trigono_alpha_beta_gramma(415,335,218);
+								SetPositions(i);
+								ReadToque (lpdelay1);
+								trigono_alpha_beta_gramma(394,635,518);
+								SetPositions(i);
+								ReadToque (lpdelay1);*/
+				//Wave gait1
+						   step_Wave_Gait1(i);
+						   // step_Wave_Gait2(i);
+				//Tripod
+						    //step_Tripod1(i);
+						   // step_Tripod2(i);
+
+			  } // Loop step
+		} // Loop walk
+
+			XGpio_DiscreteWrite(&output, 1,0xF); //Complete Process
+
+	// Sixpod Control end
+}
+//End main

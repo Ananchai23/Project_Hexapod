@@ -1,0 +1,84 @@
+16:10:48 **** Auto Build of configuration Debug for project TestGyroi2C ****
+make pre-build main-build 
+a9-linaro-pre-build-step
+' '
+'Building file: ../src/imu/MPU6050.cpp'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\hexapod" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\hexapod_leg" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\platform" -c -fmessage-length=0 -MT"src/imu/MPU6050.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../TestGyroi2C_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/imu/MPU6050.d" -MT"src/imu/MPU6050.o" -o "src/imu/MPU6050.o" "../src/imu/MPU6050.cpp"
+'Finished building: ../src/imu/MPU6050.cpp'
+' '
+'Building file: ../src/imu/imu.cc'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\hexapod" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\hexapod_leg" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\platform" -c -fmessage-length=0 -MT"src/imu/imu.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../TestGyroi2C_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/imu/imu.d" -MT"src/imu/imu.o" -o "src/imu/imu.o" "../src/imu/imu.cc"
+'Finished building: ../src/imu/imu.cc'
+' '
+'Building file: ../src/hexapod/hexapod.cc'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\hexapod" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\hexapod_leg" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\platform" -c -fmessage-length=0 -MT"src/hexapod/hexapod.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../TestGyroi2C_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/hexapod/hexapod.d" -MT"src/hexapod/hexapod.o" -o "src/hexapod/hexapod.o" "../src/hexapod/hexapod.cc"
+'Finished building: ../src/hexapod/hexapod.cc'
+' '
+'Building file: ../src/main.cc'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\hexapod" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\hexapod_leg" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\platform" -c -fmessage-length=0 -MT"src/main.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../TestGyroi2C_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.cc"
+In file included from ../src/main.cc:11:0:
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:328:32: error: no 'uint8_t MPU6050::dmpInitialize()' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpInitialize() {
+                                ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:551:34: error: no 'bool MPU6050::dmpPacketAvailable()' member function declared in class 'MPU6050'
+ bool MPU6050::dmpPacketAvailable() {
+                                  ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:578:66: error: no 'uint8_t MPU6050::dmpGetAccel(int32_t*, const uint8_t*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetAccel(int32_t *data, const uint8_t* packet) {
+                                                                  ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:586:66: error: no 'uint8_t MPU6050::dmpGetAccel(int16_t*, const uint8_t*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetAccel(int16_t *data, const uint8_t* packet) {
+                                                                  ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:594:67: error: no 'uint8_t MPU6050::dmpGetAccel(VectorInt16*, const uint8_t*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetAccel(VectorInt16 *v, const uint8_t* packet) {
+                                                                   ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:602:71: error: no 'uint8_t MPU6050::dmpGetQuaternion(int32_t*, const uint8_t*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetQuaternion(int32_t *data, const uint8_t* packet) {
+                                                                       ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:611:71: error: no 'uint8_t MPU6050::dmpGetQuaternion(int16_t*, const uint8_t*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetQuaternion(int16_t *data, const uint8_t* packet) {
+                                                                       ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:620:71: error: no 'uint8_t MPU6050::dmpGetQuaternion(Quaternion*, const uint8_t*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetQuaternion(Quaternion *q, const uint8_t* packet) {
+                                                                       ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:635:65: error: no 'uint8_t MPU6050::dmpGetGyro(int32_t*, const uint8_t*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetGyro(int32_t *data, const uint8_t* packet) {
+                                                                 ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:643:65: error: no 'uint8_t MPU6050::dmpGetGyro(int16_t*, const uint8_t*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetGyro(int16_t *data, const uint8_t* packet) {
+                                                                 ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:651:66: error: no 'uint8_t MPU6050::dmpGetGyro(VectorInt16*, const uint8_t*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetGyro(VectorInt16 *v, const uint8_t* packet) {
+                                                                  ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:661:91: error: no 'uint8_t MPU6050::dmpGetLinearAccel(VectorInt16*, VectorInt16*, VectorFloat*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetLinearAccel(VectorInt16 *v, VectorInt16 *vRaw, VectorFloat *gravity) {
+                                                                                           ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:669:92: error: no 'uint8_t MPU6050::dmpGetLinearAccelInWorld(VectorInt16*, VectorInt16*, Quaternion*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetLinearAccelInWorld(VectorInt16 *v, VectorInt16 *vReal, Quaternion *q) {
+                                                                                            ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:681:61: error: no 'uint8_t MPU6050::dmpGetGravity(VectorFloat*, Quaternion*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetGravity(VectorFloat *v, Quaternion *q) {
+                                                             ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:692:56: error: no 'uint8_t MPU6050::dmpGetEuler(float*, Quaternion*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetEuler(float *data, Quaternion *q) {
+                                                        ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:698:85: error: no 'uint8_t MPU6050::dmpGetYawPitchRoll(float*, Quaternion*, VectorFloat*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpGetYawPitchRoll(float *data, Quaternion *q, VectorFloat *gravity) {
+                                                                                     ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:711:67: error: no 'uint8_t MPU6050::dmpProcessFIFOPacket(const unsigned char*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpProcessFIFOPacket(const unsigned char *dmpData) {
+                                                                   ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:721:84: error: no 'uint8_t MPU6050::dmpReadAndProcessFIFOPacket(uint8_t, uint8_t*)' member function declared in class 'MPU6050'
+ uint8_t MPU6050::dmpReadAndProcessFIFOPacket(uint8_t numPackets, uint8_t *processed) {
+                                                                                    ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyroi2C\src\imu/MPU6050_6Axis_MotionApps20.h:746:40: error: no 'uint16_t MPU6050::dmpGetFIFOPacketSize()' member function declared in class 'MPU6050'
+ uint16_t MPU6050::dmpGetFIFOPacketSize() {
+                                        ^
+make: *** [src/main.o] Error 1
+
+16:10:51 Build Finished (took 2s.266ms)
+

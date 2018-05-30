@@ -1,0 +1,48 @@
+14:21:59 **** Build of configuration Debug for project Gyro_2 ****
+make pre-build main-build 
+a9-linaro-pre-build-step
+' '
+'Building file: ../src/platform/I2Cdev.cpp'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Gyro_2\src\imu" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Gyro_2\src\platform" -c -fmessage-length=0 -MT"src/platform/I2Cdev.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../Gyro_2_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/platform/I2Cdev.d" -MT"src/platform/I2Cdev.o" -o "src/platform/I2Cdev.o" "../src/platform/I2Cdev.cpp"
+'Finished building: ../src/platform/I2Cdev.cpp'
+' '
+'Building file: ../src/platform/i2c.c'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Gyro_2\src\imu" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Gyro_2\src\platform" -c -fmessage-length=0 -MT"src/platform/i2c.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../Gyro_2_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/platform/i2c.d" -MT"src/platform/i2c.o" -o "src/platform/i2c.o" "../src/platform/i2c.c"
+'Finished building: ../src/platform/i2c.c'
+' '
+'Building file: ../src/platform/interrupt.c'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Gyro_2\src\imu" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Gyro_2\src\platform" -c -fmessage-length=0 -MT"src/platform/interrupt.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../Gyro_2_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/platform/interrupt.d" -MT"src/platform/interrupt.o" -o "src/platform/interrupt.o" "../src/platform/interrupt.c"
+'Finished building: ../src/platform/interrupt.c'
+' '
+'Building file: ../src/imu/MPU6050.cpp'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Gyro_2\src\imu" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Gyro_2\src\platform" -c -fmessage-length=0 -MT"src/imu/MPU6050.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../Gyro_2_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/imu/MPU6050.d" -MT"src/imu/MPU6050.o" -o "src/imu/MPU6050.o" "../src/imu/MPU6050.cpp"
+'Finished building: ../src/imu/MPU6050.cpp'
+' '
+'Building file: ../src/imu/imu.cc'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Gyro_2\src\imu" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Gyro_2\src\platform" -c -fmessage-length=0 -MT"src/imu/imu.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../Gyro_2_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/imu/imu.d" -MT"src/imu/imu.o" -o "src/imu/imu.o" "../src/imu/imu.cc"
+'Finished building: ../src/imu/imu.cc'
+' '
+'Building file: ../src/main.cc'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Gyro_2\src\imu" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Gyro_2\src\platform" -c -fmessage-length=0 -MT"src/main.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../Gyro_2_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.cc"
+'Finished building: ../src/main.cc'
+' '
+'Building target: Gyro_2.elf'
+'Invoking: ARM v7 g++ linker'
+arm-none-eabi-g++ -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -Wl,-build-id=none -specs=Xilinx.spec -Wl,-T -Wl,../src/lscript.ld -L../../Gyro_2_bsp/ps7_cortexa9_0/lib -o "Gyro_2.elf"  ./src/platform/I2Cdev.o ./src/platform/i2c.o ./src/platform/interrupt.o  ./src/imu/MPU6050.o ./src/imu/imu.o  ./src/main.o   -lm -Wl,--start-group,-lxil,-lfreertos,-lgcc,-lc,-lstdc++,--end-group
+'Finished building target: Gyro_2.elf'
+' '
+'Invoking: ARM v7 Print Size'
+arm-none-eabi-size Gyro_2.elf  |tee "Gyro_2.elf.size"
+   text	   data	    bss	    dec	    hex	filename
+ 161144	   4204	  90080	 255428	  3e5c4	Gyro_2.elf
+'Finished building: Gyro_2.elf.size'
+' '
+
+14:22:05 Build Finished (took 6s.199ms)
+

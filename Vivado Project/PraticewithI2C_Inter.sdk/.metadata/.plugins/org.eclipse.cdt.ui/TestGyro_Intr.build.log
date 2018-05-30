@@ -1,0 +1,23 @@
+17:03:16 **** Incremental Build of configuration Debug for project TestGyro_Intr ****
+make pre-build main-build 
+a9-linaro-pre-build-step
+' '
+'Building file: ../src/main.cc'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro_Intr\src\hexapod" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro_Intr\src\hexapod_leg" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro_Intr\src\imu" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro_Intr\src\platform" -c -fmessage-length=0 -MT"src/main.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../TestGyro_Intr_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.cc"
+'Finished building: ../src/main.cc'
+' '
+'Building target: TestGyro_Intr.elf'
+'Invoking: ARM v7 g++ linker'
+arm-none-eabi-g++ -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -Wl,-build-id=none -specs=Xilinx.spec -Wl,-T -Wl,../src/lscript.ld -L../../TestGyro_Intr_bsp/ps7_cortexa9_0/lib -o "TestGyro_Intr.elf"  ./src/platform/I2Cdev.o ./src/platform/i2c.o ./src/platform/interrupt.o  ./src/imu/MPU6050.o ./src/imu/imu.o  ./src/hexapod_leg/comm.o ./src/hexapod_leg/joint_controls.o ./src/hexapod_leg/leg.o  ./src/hexapod/hexapod.o  ./src/main.o   -lm -Wl,--start-group,-lxil,-lfreertos,-lgcc,-lc,-lstdc++,--end-group
+'Finished building target: TestGyro_Intr.elf'
+' '
+'Invoking: ARM v7 Print Size'
+arm-none-eabi-size TestGyro_Intr.elf  |tee "TestGyro_Intr.elf.size"
+   text	   data	    bss	    dec	    hex	filename
+ 186456	   4240	  91068	 281764	  44ca4	TestGyro_Intr.elf
+'Finished building: TestGyro_Intr.elf.size'
+' '
+
+17:03:17 Build Finished (took 1s.16ms)
+

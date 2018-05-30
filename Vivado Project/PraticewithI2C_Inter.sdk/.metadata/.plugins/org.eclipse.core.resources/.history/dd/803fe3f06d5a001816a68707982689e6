@@ -1,0 +1,200 @@
+//
+// File: MvAvgFilter3.cpp
+//
+// MATLAB Coder version            : 3.3
+// C/C++ source code generated on  : 18-May-2018 12:36:21
+//
+
+// Include Files
+#include "rt_nonfinite.h"
+#include "MvAvgFilter3.h"
+#include "sum.h"
+#include "RBF2Test3.h"
+#include "mod.h"
+
+// Function Definitions
+
+//
+// A function to Filter Torque motor using a moving average filter.
+//  where Input:
+//                Data_TE     -> Matrix 18(Torque) + 3 (Gyro - Yaw,Pitch,Roll)
+//                Count       -> Value control
+//        Output:
+//                x           -> Data (18*1) or (22*1) Test RBF
+// Arguments    : const double T1[1200]
+//                const double T2[1200]
+//                const double T3[1200]
+//                const double T4[1200]
+//                const double T5[1200]
+//                const double T6[1200]
+//                const double T7[1200]
+//                const double T8[1200]
+//                const double T9[1200]
+//                const double T10[1200]
+//                const double T11[1200]
+//                const double T12[1200]
+//                const double T13[1200]
+//                const double T14[1200]
+//                const double T15[1200]
+//                const double T16[1200]
+//                const double T17[1200]
+//                const double T18[1200]
+//                double Count
+//                double N
+// Return Type  : double
+//
+double MvAvgFilter3(const double T1[1200], const double T2[1200], const double
+                    T3[1200], const double T4[1200], const double T5[1200],
+                    const double T6[1200], const double T7[1200], const double
+                    T8[1200], const double T9[1200], const double T10[1200],
+                    const double T11[1200], const double T12[1200], const double
+                    T13[1200], const double T14[1200], const double T15[1200],
+                    const double T16[1200], const double T17[1200], const double
+                    T18[1200], double Count, double N)
+{
+  double y;
+  int i0;
+  static double data_TE[21600];
+  int i;
+  int loop_ub;
+  double x[18];
+  int b_loop_ub;
+  int data_TE_size[2];
+  int b_data_TE_size[2];
+  double data_TE_data[59];
+  int c_data_TE_size[2];
+  double b_data_TE_data[1200];
+  for (i0 = 0; i0 < 1200; i0++) {
+    data_TE[18 * i0] = T1[i0];
+    data_TE[1 + 18 * i0] = T2[i0];
+    data_TE[2 + 18 * i0] = T3[i0];
+    data_TE[3 + 18 * i0] = T4[i0];
+    data_TE[4 + 18 * i0] = T5[i0];
+    data_TE[5 + 18 * i0] = T6[i0];
+    data_TE[6 + 18 * i0] = T7[i0];
+    data_TE[7 + 18 * i0] = T8[i0];
+    data_TE[8 + 18 * i0] = T9[i0];
+    data_TE[9 + 18 * i0] = T10[i0];
+    data_TE[10 + 18 * i0] = T11[i0];
+    data_TE[11 + 18 * i0] = T12[i0];
+    data_TE[12 + 18 * i0] = T13[i0];
+    data_TE[13 + 18 * i0] = T14[i0];
+    data_TE[14 + 18 * i0] = T15[i0];
+    data_TE[15 + 18 * i0] = T16[i0];
+    data_TE[16 + 18 * i0] = T17[i0];
+    data_TE[17 + 18 * i0] = T18[i0];
+  }
+
+  //  Select 18(Torque) + 3 (Gyro)
+  //  span for the moving average
+  //  Buffer data
+  //  allocation
+  y = 0.0;
+  if (N == 1.0) {
+    if (Count <= 59.0) {
+      if (b_mod(Count) == 1.0) {
+        if (1.0 > Count) {
+          loop_ub = 0;
+        } else {
+          loop_ub = (int)Count;
+        }
+
+        for (i = 0; i < 18; i++) {
+          data_TE_size[0] = 1;
+          data_TE_size[1] = loop_ub;
+          for (i0 = 0; i0 < loop_ub; i0++) {
+            data_TE_data[i0] = data_TE[i + 18 * i0];
+          }
+
+          x[i] = sum(data_TE_data, data_TE_size) / Count;
+        }
+
+        y = RBF2Test3(x);
+      }
+    } else {
+      if ((Count >= 60.0) && (Count <= 1200.0)) {
+        for (i = 0; i < 18; i++) {
+          if ((Count - 60.0) + 1.0 > Count) {
+            i0 = 0;
+            b_loop_ub = 0;
+          } else {
+            i0 = (int)((Count - 60.0) + 1.0) - 1;
+            b_loop_ub = (int)Count;
+          }
+
+          data_TE_size[0] = 1;
+          data_TE_size[1] = b_loop_ub - i0;
+          loop_ub = b_loop_ub - i0;
+          for (b_loop_ub = 0; b_loop_ub < loop_ub; b_loop_ub++) {
+            b_data_TE_data[b_loop_ub] = data_TE[i + 18 * (i0 + b_loop_ub)];
+          }
+
+          x[i] = sum(b_data_TE_data, data_TE_size) / 60.0;
+        }
+
+        y = RBF2Test3(x);
+      }
+    }
+  }
+
+  if (N >= 2.0) {
+    if (Count <= 59.0) {
+      if (1.0 > Count) {
+        loop_ub = 0;
+      } else {
+        loop_ub = (int)Count;
+      }
+
+      b_loop_ub = 1201 - (int)(120.0 + Count);
+      for (i = 0; i < 18; i++) {
+        b_data_TE_size[0] = 1;
+        b_data_TE_size[1] = 1201 - (int)(120.0 + Count);
+        for (i0 = 0; i0 < b_loop_ub; i0++) {
+          b_data_TE_data[i0] = data_TE[i + 18 * (((int)(120.0 + Count) + i0) - 1)];
+        }
+
+        c_data_TE_size[0] = 1;
+        c_data_TE_size[1] = loop_ub;
+        for (i0 = 0; i0 < loop_ub; i0++) {
+          data_TE_data[i0] = data_TE[i + 18 * i0];
+        }
+
+        x[i] = (sum(b_data_TE_data, b_data_TE_size) + sum(data_TE_data,
+                 c_data_TE_size)) / 60.0;
+      }
+
+      y = RBF2Test3(x);
+    } else {
+      if ((Count >= 60.0) && (Count <= 1200.0)) {
+        for (i = 0; i < 18; i++) {
+          if ((Count - 60.0) + 1.0 > Count) {
+            i0 = 0;
+            b_loop_ub = 0;
+          } else {
+            i0 = (int)((Count - 60.0) + 1.0) - 1;
+            b_loop_ub = (int)Count;
+          }
+
+          b_data_TE_size[0] = 1;
+          b_data_TE_size[1] = b_loop_ub - i0;
+          loop_ub = b_loop_ub - i0;
+          for (b_loop_ub = 0; b_loop_ub < loop_ub; b_loop_ub++) {
+            b_data_TE_data[b_loop_ub] = data_TE[i + 18 * (i0 + b_loop_ub)];
+          }
+
+          x[i] = sum(b_data_TE_data, b_data_TE_size) / 60.0;
+        }
+
+        y = RBF2Test3(x);
+      }
+    }
+  }
+
+  return y;
+}
+
+//
+// File trailer for MvAvgFilter3.cpp
+//
+// [EOF]
+//

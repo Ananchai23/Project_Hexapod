@@ -1,0 +1,682 @@
+// Include Files
+#include "xparameters.h"
+#include "xgpio.h"
+#include "xscugic.h"
+#include "xil_exception.h"
+#include "sleep.h"
+#include "stdio.h"
+
+//Buzzer addition
+#include "xgpiops.h"
+XGpioPs Gpio;
+int Status;
+XGpioPs_Config *GPIOConfigPtr;
+#define ledpin 13
+
+//SD Card addition
+#include "xsdps.h"
+#include "xil_printf.h"
+#include "ff.h"
+#include "xil_cache.h"
+
+//Hexapod Robot Control
+#include "joint_controls.h"
+
+//IMU MPU-6050
+#include "interrupt.h"
+#include "i2c.h"
+#include "imu.h"
+#include "MPU6050.h"
+
+//RBF Test
+#include "rt_nonfinite.h"
+#include "MvAvgFilter3.h"
+#include "MvAvgFilter3_terminate.h"
+#include "MvAvgFilter3_initialize.h"
+
+//IMU 6050 Variable
+float Roll,Pitch,Yaw;
+
+//SD Card addition start
+static FATFS FS_instance; // File System instance
+static FIL file1;		// File instance
+FRESULT result;			// FRESULT variable
+static char FileName[32] = "b70.txt"; // name of the log
+static char *Log_File; // pointer to the log
+char *Path = "0:/";  //  string pointer to the logical drive number
+unsigned int BytesWr; // Bytes written
+int len=0;			// length of the string
+int accum=0;//  variable holding the EOF
+char Buffer_logger[256] __attribute__ ((aligned(32))); // Buffer should be word aligned (multiple of 4)
+u32 Buffer_size = 256;
+//SD Card addition end
+
+//IK Viarables
+const float C=7.5; //coxa
+const float F=5.6; //femur
+const float T=7.5; // tibia
+const float z_off = 8;
+const float pi = 3.14;
+float alpha,beta,gramma;
+float L, L1;
+
+//Sixpod Viarables
+int speed = 300;
+int lpdelay1 = 10;
+int lpdelay2 = 4;
+int lpdelay3 = 5;
+int timedelay = 30000; // 30ms.
+int j = 1;
+int torque = 500;
+int IDCoxa[10] = {1,4,7,10,13,16}; //ID Motor Coxa- Joint
+int IDFemur[10] = {2,5,8,11,14,17}; //ID Motor Femur- Joint
+int IDTibia[10] = {3,6,9,12,15,18};	//ID Motor Tibia- Joint
+double TorqueValue[22];
+double T1[1200],T2[1200],T3[1200],T4[1200],T5[1200],T6[1200],T7[1200],T8[1200],T9[1200];
+double T10[1200],T11[1200],T12[1200],T13[1200],T14[1200],T15[1200],T16[1200],T17[1200],T18[1200];
+
+//Neural Network Viarables
+int surface_type = 1; // Class Neural Network
+int savestate = 1; //Output RBF Network
+int Count = 0; //Count 0-1200 N++
+int N = 1;   //Round 0-1200
+int WalkingControl = 1; //Walke type
+int y =0;
+int County = 0;
+int CoungChange = 20;
+int LengthTest = 1200;
+//---------------------- Function ------------------------------
+
+//Squre Functiontimedelay
+int sq(float x)
+{
+	x = x*x;
+	return x;
+}
+
+//Inverse Kinematic Function
+void trigono_alpha_beta_gramma(float x, float y, float z)
+{
+  alpha=x;
+  beta=y;
+  gramma=z;
+}
+
+//Control Legs
+void SetPositions(int leg)
+{
+
+  if(leg == 1)
+  {
+	  JointSetGoalPosition(1,alpha);
+	  JointSetGoalPosition(2,beta);
+	  JointSetGoalPosition(3,gramma);
+  }
+
+  else if(leg == 2)
+  {
+  //Dxl.writeByte(1,Torque_Enable,1);
+	  JointSetGoalPosition(4,alpha);
+	  JointSetGoalPosition(5,beta);
+	  JointSetGoalPosition(6,gramma);
+  }
+
+  else if(leg == 3)
+  {
+  //Dxl.writeByte(4,Torque_Enable,1);
+	  JointSetGoalPosition(7,alpha);
+	  JointSetGoalPosition(8,beta);
+	  JointSetGoalPosition(9,gramma);
+  }
+
+  else if(leg ==4)
+  {
+  //Dxl.writeByte(7,Torque_Enable,1);
+	  JointSetGoalPosition(10,1023-alpha);
+	  JointSetGoalPosition(11,1023-beta);
+	  JointSetGoalPosition(12,1023-gramma);
+  }
+
+  else if(leg == 5)
+  {
+  //Dxl.writeByte(10,Torque_Enable,1);
+	  JointSetGoalPosition(13,1023-alpha);
+	  JointSetGoalPosition(14,1023-beta);
+	  JointSetGoalPosition(15,1023-gramma);
+  }
+
+  else if(leg ==6)
+  {
+  //Dxl.writeByte(13,Torque_Enable,1);
+	  JointSetGoalPosition(16,1023-alpha);
+	  JointSetGoalPosition(17,1023-beta);
+	  JointSetGoalPosition(18,1023-gramma);
+  }
+}
+
+// Function save text file to SD Card
+
+int Save2SD() {
+
+			sprintf(Buffer_logger, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %.2f %.2f %.2f %d \r\n"
+					,TorqueValue[1],TorqueValue[2],TorqueValue[3],TorqueValue[4],TorqueValue[5],TorqueValue[6]
+					,TorqueValue[7],TorqueValue[8],TorqueValue[9],TorqueValue[10],TorqueValue[11],TorqueValue[12]
+					,TorqueValue[13],TorqueValue[14],TorqueValue[15],TorqueValue[16],TorqueValue[17],TorqueValue[18]
+					,Yaw,Pitch,Roll,surface_type);
+
+			// Open log for writing
+				Log_File = (char *)FileName;
+				result = f_open(&file1, Log_File,FA_WRITE);
+
+				if (result!=0)
+					{
+					return XST_FAILURE;
+					}
+
+			// Point to the end of log
+					result = f_lseek(&file1,accum);
+					if (result!=0)
+					{
+					return XST_FAILURE;
+					}
+
+			// Write to log
+					result = f_write(&file1, (const void*)Buffer_logger, Buffer_size,&BytesWr);
+					if (result!=0)
+					{
+					return XST_FAILURE;
+					}
+
+			// Increment file EOF pointer
+					len = strlen(Buffer_logger);
+					accum=accum+len;
+
+			 //Close file.
+					result = f_close(&file1);
+					if (result!=0)
+					{
+					return XST_FAILURE;
+					}
+
+					//xil_printf("Data written to log Successfully %d \r\n",i);
+					//sleep(1);
+}
+
+// end function save to SD card
+
+// Function Read IMU
+void ReadIMU (){
+
+		int status;
+		status = Imu.readFifoBuffer();
+		if (status == XST_SUCCESS) {
+				//xil_printf("ypr: ");
+				//prinfloat(Imu.ypr[0] * 180 / M_PI);
+				//xil_printf(", ");
+				//prinfloat(Imu.ypr[1] * 180 / M_PI);
+				//xil_printf(", ");
+				//prinfloat(Imu.ypr[2] * 180 / M_PI);
+				//xil_printf("\r\n");
+				Yaw = (Imu.ypr[0] * 180 / M_PI);
+				Pitch = (Imu.ypr[1] * 180 / M_PI);
+				Roll = (Imu.ypr[2] * 180 / M_PI);
+			}
+
+}
+
+// Function Save Toque
+void SaveTorque (int index){
+
+	if(index == 1)
+		{
+			T1[Count] = TorqueValue[1];
+		}
+	if(index == 2)
+		{
+			T2[Count] = TorqueValue[2];
+		}
+	if(index == 3)
+		{
+			T3[Count] = TorqueValue[3];
+		}
+	if(index == 4)
+		{
+			T4[Count] = TorqueValue[4];
+		}
+	if(index == 5)
+		{
+			T5[Count] = TorqueValue[5];
+		}
+	if(index == 6)
+		{
+			T6[Count] = TorqueValue[6];
+		}
+	if(index == 7)
+		{
+			T7[Count] = TorqueValue[7];
+		}
+	if(index == 8)
+		{
+			T8[Count] = TorqueValue[8];
+		}
+	if(index == 9)
+		{
+			T9[Count] = TorqueValue[9];
+		}
+	if(index == 10)
+		{
+			T10[Count] = TorqueValue[10];
+		}
+	if(index == 11)
+		{
+			T11[Count] = TorqueValue[11];
+		}
+	if(index == 12)
+		{
+			T12[Count] = TorqueValue[12];
+		}
+	if(index == 13)
+		{
+			T13[Count] = TorqueValue[13];
+		}
+	if(index == 14)
+		{
+			T14[Count] = TorqueValue[14];
+		}
+	if(index == 15)
+		{
+			T15[Count] = TorqueValue[15];
+		}
+	if(index == 16)
+		{
+			T16[Count] = TorqueValue[16];
+		}
+	if(index == 17)
+		{
+			T17[Count] = TorqueValue[17];
+		}
+	if(index == 18)
+		{
+			T18[Count] = TorqueValue[18];
+		}
+
+}
+// End Function Save Toque
+
+
+
+// Function Read Toque
+void ReadToque (int loop){
+
+	for(int i=1;i<=loop;i++){
+
+		//Read Torque (ID)
+		for(int j=1;j<=18;j++)
+		{
+			TorqueValue[j] = JointGetLoad(j);
+			if(TorqueValue[j] >= 2048){
+				TorqueValue[j] = 0; // Reset Torque Error Motor
+			}
+			if(TorqueValue[j]>= 1023){
+				TorqueValue[j] = TorqueValue[j] - 1023; // Present Load map to 0 - 1023
+			}
+
+			TorqueValue[j] =TorqueValue[j]/1023; //Normalize Torque data
+			SaveTorque(j);		// Save Torque to T1-T18
+		}
+
+				Count = Count +1; //Count index for Mvg Filter
+				ReadIMU(); //Read Gyro
+				//Save2SD(); //Save to SD Card
+				y = MvAvgFilter3(T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,Count,N); //MvAvgFilter & RBF_Test
+				XGpio output;
+				XGpio_Initialize(&output, XPAR_AXI_GPIO_1_DEVICE_ID);	//initialize output XGpio variable
+				XGpio_SetDataDirection(&output, 1, 0x0);
+				if(y >= 1)
+				{
+					XGpio_DiscreteWrite(&output, 1,0x1);
+				}
+				else if (y < 0)
+				{
+					XGpio_DiscreteWrite(&output, 1,0x8);
+				}
+
+				usleep(timedelay); //***delay step motor
+
+				if ((savestate == y)&&(savestate == -1))
+				{
+					County++;
+					if(County >= CoungChange){	// Count for void error
+						WalkingControl = -1;
+					}
+				}
+				else
+				{
+					savestate =y;
+					County=0;
+				}
+
+				if(Count == LengthTest){ // Count = Length N++ for save data allocation
+					Count = 0;
+					N = N+1;
+				}
+
+				}
+}
+
+//Function Wavegait1
+void step_Wave_Gait1(int i)
+{
+   if(i==1)
+   {
+  trigono_alpha_beta_gramma(557,550,350);  // LEG 1  sky 1
+  SetPositions(j);
+  trigono_alpha_beta_gramma(579,635,518);  // LEG 5  ground 4 max back
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(536,635,518);  // LEG 3  ground 3
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(493,635,518);  // LEG 4  ground 2
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(450,635,518);  // LEG 2  ground 1 max font
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(471,550,350);  // LEG 6  sky 2
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+
+      if(i==2)
+   {
+  trigono_alpha_beta_gramma(471,550,350);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(557,550,350);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(579,635,518);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(536,635,518);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(493,635,518);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(450,635,518);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+
+         if(i==3)
+   {
+  trigono_alpha_beta_gramma(450,635,518);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(471,550,350);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(557,550,350);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(579,635,518);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(536,635,518);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(493,635,518);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+
+         if(i==4)
+   {
+  trigono_alpha_beta_gramma(493,635,518);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(450,635,518);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(471,550,350);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(557,550,350);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(579,635,518);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(536,635,518);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+         if(i==5)
+   {
+  trigono_alpha_beta_gramma(536,635,518);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(493,635,518);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(450,635,518);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(471,550,350);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(557,550,350);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(579,635,518);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+         if(i==6)
+   {
+  trigono_alpha_beta_gramma(579,635,518);
+  SetPositions(j);
+  trigono_alpha_beta_gramma(536,635,518);
+  SetPositions(j+4);
+  trigono_alpha_beta_gramma(493,635,518);
+  SetPositions(j+2);
+  trigono_alpha_beta_gramma(450,635,518);
+  SetPositions(j+3);
+  trigono_alpha_beta_gramma(471,550,350);
+  SetPositions(j+1);
+  trigono_alpha_beta_gramma(557,550,350);
+  SetPositions(j+5);
+  ReadToque (lpdelay3);
+   }
+}
+
+
+//Function Wavegait2
+void step_Wave_Gait2(int i)
+{
+	 if(i==1)
+	   {
+	  trigono_alpha_beta_gramma(548,300,250);  // LEG 1  sky 1
+	  SetPositions(j);
+	  trigono_alpha_beta_gramma(560,650,518);  // LEG 5  ground 4 max back
+	  SetPositions(j+4);
+	  trigono_alpha_beta_gramma(537,650,518);  // LEG 3  ground 3
+	  SetPositions(j+2);
+	  trigono_alpha_beta_gramma(493,650,518);  // LEG 4  ground 2
+	  SetPositions(j+3);
+	  trigono_alpha_beta_gramma(470,650,518);  // LEG 2  ground 1 max font
+	  SetPositions(j+1);
+	  trigono_alpha_beta_gramma(482,300,250);  // LEG 6  sky 2
+	  SetPositions(j+5);
+	  ReadToque (lpdelay3);
+	   }
+
+	      if(i==2)
+	   {
+	  trigono_alpha_beta_gramma(482,300,250);
+	  SetPositions(j);
+	  trigono_alpha_beta_gramma(548,300,250);
+	  SetPositions(j+4);
+	  trigono_alpha_beta_gramma(560,650,518);
+	  SetPositions(j+2);
+	  trigono_alpha_beta_gramma(537,650,518);
+	  SetPositions(j+3);
+	  trigono_alpha_beta_gramma(493,650,518);
+	  SetPositions(j+1);
+	  trigono_alpha_beta_gramma(470,650,518);
+	  SetPositions(j+5);
+	  ReadToque (lpdelay3);
+	   }
+
+	         if(i==3)
+	   {
+	  trigono_alpha_beta_gramma(470,650,518);
+	  SetPositions(j);
+	  trigono_alpha_beta_gramma(482,300,250);
+	  SetPositions(j+4);
+	  trigono_alpha_beta_gramma(548,300,250);
+	  SetPositions(j+2);
+	  trigono_alpha_beta_gramma(560,650,518);
+	  SetPositions(j+3);
+	  trigono_alpha_beta_gramma(537,650,518);
+	  SetPositions(j+1);
+	  trigono_alpha_beta_gramma(493,650,518);
+	  SetPositions(j+5);
+	  ReadToque (lpdelay3);
+	   }
+
+	         if(i==4)
+	   {
+	  trigono_alpha_beta_gramma(493,650,518);
+	  SetPositions(j);
+	  trigono_alpha_beta_gramma(470,650,518);
+	  SetPositions(j+4);
+	  trigono_alpha_beta_gramma(482,300,250);
+	  SetPositions(j+2);
+	  trigono_alpha_beta_gramma(548,300,250);
+	  SetPositions(j+3);
+	  trigono_alpha_beta_gramma(560,650,518);
+	  SetPositions(j+1);
+	  trigono_alpha_beta_gramma(537,650,518);
+	  SetPositions(j+5);
+	  ReadToque (lpdelay3);
+	   }
+	         if(i==5)
+	   {
+	  trigono_alpha_beta_gramma(537,650,518);
+	  SetPositions(j);
+	  trigono_alpha_beta_gramma(493,650,518);
+	  SetPositions(j+4);
+	  trigono_alpha_beta_gramma(470,650,518);
+	  SetPositions(j+2);
+	  trigono_alpha_beta_gramma(482,300,250);
+	  SetPositions(j+3);
+	  trigono_alpha_beta_gramma(548,300,250);
+	  SetPositions(j+1);
+	  trigono_alpha_beta_gramma(560,650,518);
+	  SetPositions(j+5);
+	  ReadToque (lpdelay3);
+	   }
+	         if(i==6)
+	   {
+	  trigono_alpha_beta_gramma(560,650,518);
+	  SetPositions(j);
+	  trigono_alpha_beta_gramma(537,650,518);
+	  SetPositions(j+4);
+	  trigono_alpha_beta_gramma(493,650,518);
+	  SetPositions(j+2);
+	  trigono_alpha_beta_gramma(450,635,518);
+	  SetPositions(j+3);
+	  trigono_alpha_beta_gramma(482,300,250);
+	  SetPositions(j+1);
+	  trigono_alpha_beta_gramma(548,300,250);
+	  SetPositions(j+5);
+	  ReadToque (lpdelay3);
+	   }
+}
+
+//**************************** Main ****************************//
+
+int main (void)
+{
+	//GPIO PS
+	GPIOConfigPtr = XGpioPs_LookupConfig(XPAR_PS7_GPIO_0_DEVICE_ID);
+
+	Status = XGpioPs_CfgInitialize(&Gpio, GPIOConfigPtr, GPIOConfigPtr ->BaseAddr);
+
+	if (Status != XST_SUCCESS) {
+
+	return XST_FAILURE;
+
+	}
+	XGpioPs_SetDirectionPin(&Gpio, ledpin, 1);
+
+	XGpioPs_SetOutputEnablePin(&Gpio, ledpin, 1);
+
+	 XGpio input, output;
+	   //int button_data = 0;
+	  // int switch_data = 0;
+
+	   XGpio_Initialize(&input, XPAR_AXI_GPIO_0_DEVICE_ID);	//initialize input XGpio variable
+	   XGpio_Initialize(&output, XPAR_AXI_GPIO_1_DEVICE_ID);	//initialize output XGpio variable
+
+	   XGpio_SetDataDirection(&input, 1, 0xF);			//set first channel tristate buffer to input
+	   XGpio_SetDataDirection(&input, 2, 0xF);			//set second channel tristate buffer to input
+
+	   XGpio_SetDataDirection(&output, 1, 0x0);			//set first channel tristate buffer to output
+
+	   XGpio_DiscreteWrite(&output, 1,0xF);
+	// Mount SD Card and initialize device
+	result = f_mount(&FS_instance,Path, 1);
+		if (result != 0) {
+			XGpio_DiscreteWrite(&output, 1,0x1);
+			return XST_FAILURE;
+		}
+  // Creating new file with read/write permissions
+	Log_File = (char *)FileName;
+	result = f_open(&file1, Log_File, FA_CREATE_ALWAYS | FA_WRITE | FA_READ);
+		if (result!= 0) {
+			XGpio_DiscreteWrite(&output, 1,0x2);
+			return XST_FAILURE;
+		}
+
+  // Setup IMU (interrupt pin 12)
+			int intrPin = 12;
+			Imu.setup(intrPin);
+
+//*** Sixpod Setup Start ***
+			XGpio_DiscreteWrite(&output, 1,0x4);
+			//Set Base Positon
+			for(int i =1;i<=18;i++){
+				JointSetGoalTorque(i,1000);
+			}
+			for(int i =1;i<=6;i++){
+				trigono_alpha_beta_gramma(515,635,518); //Base Step
+				SetPositions(i);
+			}
+
+				sleep(2);
+
+	//Enable Torque & Set Speed
+			for(int i =1;i<=18;i++){
+				JointSetMovingSpeed(i,speed); //Default Speed
+				JointTorqueEnable(i);			//Enable Torque (1)
+				JointSetGoalTorque(i,torque); //Default Torque
+				usleep(30000);
+			}
+
+	// wait IMU
+			for(int i=1;i<=5;i++){
+				ReadIMU();
+				//XGpioPs_WritePin(&Gpio, ledpin,0);
+				XGpio_DiscreteWrite(&output, 1,0xF);
+				sleep(1);
+				//XGpioPs_WritePin(&Gpio, ledpin, 1);
+				XGpio_DiscreteWrite(&output, 1,0x0);
+				sleep(1);
+			}
+//*** End Setup Sixpod ***
+
+// Start Gait Sixpod
+
+		for(int loop=1;loop<=20;loop++){
+			if(WalkingControl == 1){
+			for(int i=1;i<=6;i++)
+			  {
+				//XGpio_DiscreteWrite(&output, 1,0x2);
+				step_Wave_Gait1(i);
+			  } // Loop step
+		}
+
+			if(WalkingControl == -1){
+						for(int i=1;i<=6;i++)
+						  {
+							//XGpio_DiscreteWrite(&output, 1,0x4);
+							step_Wave_Gait2(i);
+						  } // Loop step
+					}
+		}// Loop walk
+
+			XGpio_DiscreteWrite(&output, 1,0xF); //Complete Process
+
+	// Sixpod Control end
+}
+//End main

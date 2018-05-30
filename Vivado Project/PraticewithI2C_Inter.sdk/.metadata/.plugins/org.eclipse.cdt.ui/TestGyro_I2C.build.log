@@ -1,0 +1,21 @@
+16:14:14 **** Auto Build of configuration Debug for project TestGyro_I2C ****
+make pre-build main-build 
+a9-linaro-pre-build-step
+' '
+'Building file: ../src/platform/I2Cdev.cpp'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro_I2C\src\hexapod" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro_I2C\src\hexapod_leg" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro_I2C\src\imu" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro_I2C\src\platform" -c -fmessage-length=0 -MT"src/platform/I2Cdev.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../TestGyro_I2C_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/platform/I2Cdev.d" -MT"src/platform/I2Cdev.o" -o "src/platform/I2Cdev.o" "../src/platform/I2Cdev.cpp"
+'Finished building: ../src/platform/I2Cdev.cpp'
+' '
+'Building file: ../src/platform/i2c.c'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro_I2C\src\hexapod" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro_I2C\src\hexapod_leg" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro_I2C\src\imu" -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro_I2C\src\platform" -c -fmessage-length=0 -MT"src/platform/i2c.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../TestGyro_I2C_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/platform/i2c.d" -MT"src/platform/i2c.o" -o "src/platform/i2c.o" "../src/platform/i2c.c"
+In file included from ../src/platform/i2c.c:10:0:
+../src/platform/platform.h:12:22: fatal error: FreeRTOS.h: No such file or directory
+ #include "FreeRTOS.h"
+                      ^
+compilation terminated.
+make: *** [src/platform/i2c.o] Error 1
+
+16:14:15 Build Finished (took 714ms)
+

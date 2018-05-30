@@ -1,0 +1,64 @@
+14:40:06 **** Build of configuration Debug for project ReadGyro ****
+make all 
+'Building file: ../src/platform/i2c.c'
+'Invoking: ARM v7 gcc compiler'
+arm-none-eabi-gcc -Wall -O0 -g -IC:/Users/Frien/PraticewithI2C_Inter/PraticewithI2C_Inter.sdk/ReadGyro_bsp/ps7_cortexa9_0/include -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include" -c -fmessage-length=0 -MT"src/platform/i2c.o" -MMD -MP -MF"src/platform/i2c.d" -MT"src/platform/i2c.o" -o "src/platform/i2c.o" "../src/platform/i2c.c"
+'Finished building: ../src/platform/i2c.c'
+' '
+'Building file: ../src/platform/interrupt.c'
+'Invoking: ARM v7 gcc compiler'
+arm-none-eabi-gcc -Wall -O0 -g -IC:/Users/Frien/PraticewithI2C_Inter/PraticewithI2C_Inter.sdk/ReadGyro_bsp/ps7_cortexa9_0/include -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include" -c -fmessage-length=0 -MT"src/platform/interrupt.o" -MMD -MP -MF"src/platform/interrupt.d" -MT"src/platform/interrupt.o" -o "src/platform/interrupt.o" "../src/platform/interrupt.c"
+'Finished building: ../src/platform/interrupt.c'
+' '
+'Building file: ../src/hexapod_leg/comm.c'
+'Invoking: ARM v7 gcc compiler'
+arm-none-eabi-gcc -Wall -O0 -g -IC:/Users/Frien/PraticewithI2C_Inter/PraticewithI2C_Inter.sdk/ReadGyro_bsp/ps7_cortexa9_0/include -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include" -c -fmessage-length=0 -MT"src/hexapod_leg/comm.o" -MMD -MP -MF"src/hexapod_leg/comm.d" -MT"src/hexapod_leg/comm.o" -o "src/hexapod_leg/comm.o" "../src/hexapod_leg/comm.c"
+'Finished building: ../src/hexapod_leg/comm.c'
+' '
+'Building file: ../src/hexapod_leg/joint_controls.c'
+'Invoking: ARM v7 gcc compiler'
+arm-none-eabi-gcc -Wall -O0 -g -IC:/Users/Frien/PraticewithI2C_Inter/PraticewithI2C_Inter.sdk/ReadGyro_bsp/ps7_cortexa9_0/include -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include" -c -fmessage-length=0 -MT"src/hexapod_leg/joint_controls.o" -MMD -MP -MF"src/hexapod_leg/joint_controls.d" -MT"src/hexapod_leg/joint_controls.o" -o "src/hexapod_leg/joint_controls.o" "../src/hexapod_leg/joint_controls.c"
+'Finished building: ../src/hexapod_leg/joint_controls.c'
+' '
+'Building file: ../src/freertos_hello_world.c'
+'Invoking: ARM v7 gcc compiler'
+arm-none-eabi-gcc -Wall -O0 -g -IC:/Users/Frien/PraticewithI2C_Inter/PraticewithI2C_Inter.sdk/ReadGyro_bsp/ps7_cortexa9_0/include -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include" -c -fmessage-length=0 -MT"src/freertos_hello_world.o" -MMD -MP -MF"src/freertos_hello_world.d" -MT"src/freertos_hello_world.o" -o "src/freertos_hello_world.o" "../src/freertos_hello_world.c"
+In file included from C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include/imu.h:9:0,
+                 from ../src/freertos_hello_world.c:106:
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include/helper_3dmath.h:37:1: error: unknown type name 'class'
+ class Quaternion {
+ ^~~~~
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include/helper_3dmath.h:37:18: error: expected '=', ',', ';', 'asm' or '__attribute__' before '{' token
+ class Quaternion {
+                  ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include/helper_3dmath.h:94:1: error: unknown type name 'class'
+ class VectorInt16 {
+ ^~~~~
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include/helper_3dmath.h:94:19: error: expected '=', ',', ';', 'asm' or '__attribute__' before '{' token
+ class VectorInt16 {
+                   ^
+In file included from C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include/imu.h:9:0,
+                 from ../src/freertos_hello_world.c:106:
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include/helper_3dmath.h:161:1: error: unknown type name 'class'
+ class VectorFloat {
+ ^~~~~
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include/helper_3dmath.h:161:19: error: expected '=', ',', ';', 'asm' or '__attribute__' before '{' token
+ class VectorFloat {
+                   ^
+In file included from ../src/freertos_hello_world.c:106:0:
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include/imu.h:14:1: error: unknown type name 'class'
+ class IMU {
+ ^~~~~
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include/imu.h:14:11: error: expected '=', ',', ';', 'asm' or '__attribute__' before '{' token
+ class IMU {
+           ^
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include/imu.h:34:8: error: unknown type name 'IMU'
+ static IMU Imu;
+        ^~~
+C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\ReadGyro\src\include/imu.h:34:12: warning: 'Imu' defined but not used [-Wunused-variable]
+ static IMU Imu;
+            ^~~
+make: *** [src/freertos_hello_world.o] Error 1
+
+14:40:08 Build Finished (took 1s.160ms)
+

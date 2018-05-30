@@ -1,0 +1,47 @@
+15:36:22 **** Auto Build of configuration Debug for project TestGyro ****
+make pre-build main-build 
+a9-linaro-pre-build-step
+' '
+'Building file: ../src/main.cc'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro\include" -c -fmessage-length=0 -MT"src/main.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../TestGyro_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.cc"
+In file included from ../../TestGyro_bsp/ps7_cortexa9_0/include/lwip/netif.h:41:0,
+                 from ../../TestGyro_bsp/ps7_cortexa9_0/include/netif/xadapter.h:49,
+                 from C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\TestGyro\include/platform.h:26,
+                 from ../src/main.cc:6:
+../../TestGyro_bsp/ps7_cortexa9_0/include/lwip/ip_addr.h:213:23: warning: invalid suffix on literal; C++11 requires a space between literal and string macro [-Wliteral-suffix]
+   LWIP_DEBUGF(debug, ("%"U16_F".%"U16_F".%"U16_F".%"U16_F,             \
+                       ^
+../../TestGyro_bsp/ps7_cortexa9_0/include/lwip/ip_addr.h:213:31: warning: invalid suffix on literal; C++11 requires a space between literal and string macro [-Wliteral-suffix]
+   LWIP_DEBUGF(debug, ("%"U16_F".%"U16_F".%"U16_F".%"U16_F,             \
+                               ^
+../../TestGyro_bsp/ps7_cortexa9_0/include/lwip/ip_addr.h:213:40: warning: invalid suffix on literal; C++11 requires a space between literal and string macro [-Wliteral-suffix]
+   LWIP_DEBUGF(debug, ("%"U16_F".%"U16_F".%"U16_F".%"U16_F,             \
+                                        ^
+../../TestGyro_bsp/ps7_cortexa9_0/include/lwip/ip_addr.h:213:49: warning: invalid suffix on literal; C++11 requires a space between literal and string macro [-Wliteral-suffix]
+   LWIP_DEBUGF(debug, ("%"U16_F".%"U16_F".%"U16_F".%"U16_F,             \
+                                                 ^
+../src/main.cc: In function 'int main()':
+../src/main.cc:28:26: error: 'imuCallBack' was not declared in this scope
+  Imu.setup(MPU_INTR_PIN, imuCallBack, flagVar);
+                          ^~~~~~~~~~~
+../src/main.cc:28:39: error: 'flagVar' was not declared in this scope
+  Imu.setup(MPU_INTR_PIN, imuCallBack, flagVar);
+                                       ^~~~~~~
+../src/main.cc:32:4: error: invalid use of 'this' in non-member function
+    this->leg[i].moveTo(this->footTip[i], setup_time);
+    ^~~~
+../src/main.cc:32:24: error: invalid use of 'this' in non-member function
+    this->leg[i].moveTo(this->footTip[i], setup_time);
+                        ^~~~
+../src/main.cc:46:3: error: 'bodyRotOffset' was not declared in this scope
+   bodyRotOffset.y = Imu.euler[0];
+   ^~~~~~~~~~~~~
+../src/main.cc: At global scope:
+../src/main.cc:13:13: warning: 'void print_float(float)' defined but not used [-Wunused-function]
+ static void print_float(float f){
+             ^~~~~~~~~~~
+make: *** [src/main.o] Error 1
+
+15:36:31 Build Finished (took 9s.124ms)
+

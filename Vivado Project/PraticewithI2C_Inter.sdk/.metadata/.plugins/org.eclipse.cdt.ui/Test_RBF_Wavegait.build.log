@@ -1,0 +1,30 @@
+16:25:55 **** Incremental Build of configuration Debug for project Test_RBF_Wavegait ****
+make pre-build main-build 
+a9-linaro-pre-build-step
+' '
+'Building file: ../src/main.cc'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Test_RBF_Wavegait\include" -c -fmessage-length=0 -MT"src/main.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../SD_Card_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.cc"
+../src/main.cc:46:14: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+ char *Path = "0:/";  //  string pointer to the logical drive number
+              ^~~~~
+../src/main.cc: In function 'int Save2SD()':
+../src/main.cc:204:1: warning: control reaches end of non-void function [-Wreturn-type]
+ }
+ ^
+'Finished building: ../src/main.cc'
+' '
+'Building target: Test_RBF_Wavegait.elf'
+'Invoking: ARM v7 g++ linker'
+arm-none-eabi-g++ -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -Wl,-build-id=none -specs=Xilinx.spec -Wl,-T -Wl,../src/lscript.ld -L../../SD_Card_bsp/ps7_cortexa9_0/lib -o "Test_RBF_Wavegait.elf"  ./src/hexapod_leg/I2Cdev.o ./src/hexapod_leg/MPU6050.o ./src/hexapod_leg/comm.o ./src/hexapod_leg/i2c.o ./src/hexapod_leg/imu.o ./src/hexapod_leg/interrupt.o ./src/hexapod_leg/joint_controls.o ./src/hexapod_leg/leg.o  ./src/FilterRBF/MvAvgFilter3.o ./src/FilterRBF/MvAvgFilter3_initialize.o ./src/FilterRBF/MvAvgFilter3_terminate.o ./src/FilterRBF/RBF2Test3.o ./src/FilterRBF/mod.o ./src/FilterRBF/rtGetInf.o ./src/FilterRBF/rtGetNaN.o ./src/FilterRBF/rt_nonfinite.o ./src/FilterRBF/sum.o  ./src/main.o   -lm -Wl,--start-group,-lxil,-lfreertos,-lgcc,-lc,-lstdc++,--end-group -Wl,--start-group,-lxilffs,-lxil,-lgcc,-lc,--end-group
+'Finished building target: Test_RBF_Wavegait.elf'
+' '
+'Invoking: ARM v7 Print Size'
+arm-none-eabi-size Test_RBF_Wavegait.elf  |tee "Test_RBF_Wavegait.elf.size"
+   text	   data	    bss	    dec	    hex	filename
+ 218092	   4520	 438592	 661204	  a16d4	Test_RBF_Wavegait.elf
+'Finished building: Test_RBF_Wavegait.elf.size'
+' '
+
+16:25:56 Build Finished (took 1s.340ms)
+

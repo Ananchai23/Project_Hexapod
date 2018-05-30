@@ -1,0 +1,21 @@
+00:54:25 **** Auto Build of configuration Debug for project Gyro_1 ****
+make pre-build main-build 
+a9-linaro-pre-build-step
+' '
+'Building file: ../src/main.cc'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Gyro_1\include" -c -fmessage-length=0 -MT"src/main.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../Gyro_1_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.cc"
+../src/main.cc: In function 'int main()':
+../src/main.cc:8:2: error: 'Hexapod' was not declared in this scope
+  Hexapod.begin( (void *) dmpDataReady, &MpuIntrFlag);
+  ^~~~~~~
+../src/main.cc:8:26: error: 'dmpDataReady' was not declared in this scope
+  Hexapod.begin( (void *) dmpDataReady, &MpuIntrFlag);
+                          ^~~~~~~~~~~~
+../src/main.cc:8:41: error: 'MpuIntrFlag' was not declared in this scope
+  Hexapod.begin( (void *) dmpDataReady, &MpuIntrFlag);
+                                         ^~~~~~~~~~~
+make: *** [src/main.o] Error 1
+
+00:54:26 Build Finished (took 453ms)
+

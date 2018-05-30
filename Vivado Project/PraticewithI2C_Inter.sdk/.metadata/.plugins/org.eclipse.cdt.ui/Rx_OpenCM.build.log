@@ -1,0 +1,33 @@
+14:23:07 **** Build of configuration Debug for project Rx_OpenCM ****
+make pre-build main-build 
+a9-linaro-pre-build-step
+' '
+'Building file: ../src/hexapod_leg/comm.c'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Rx_OpenCM\include" -c -fmessage-length=0 -MT"src/hexapod_leg/comm.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../Rx_OpenCM_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/hexapod_leg/comm.d" -MT"src/hexapod_leg/comm.o" -o "src/hexapod_leg/comm.o" "../src/hexapod_leg/comm.c"
+'Finished building: ../src/hexapod_leg/comm.c'
+' '
+'Building file: ../src/hexapod_leg/joint_controls.c'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Rx_OpenCM\include" -c -fmessage-length=0 -MT"src/hexapod_leg/joint_controls.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../Rx_OpenCM_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/hexapod_leg/joint_controls.d" -MT"src/hexapod_leg/joint_controls.o" -o "src/hexapod_leg/joint_controls.o" "../src/hexapod_leg/joint_controls.c"
+'Finished building: ../src/hexapod_leg/joint_controls.c'
+' '
+'Building file: ../src/main.cc'
+'Invoking: ARM v7 g++ compiler'
+arm-none-eabi-g++ -Wall -O0 -g3 -I"C:\Users\Frien\PraticewithI2C_Inter\PraticewithI2C_Inter.sdk\Rx_OpenCM\include" -c -fmessage-length=0 -MT"src/main.o" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -I../../Rx_OpenCM_bsp/ps7_cortexa9_0/include -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.cc"
+'Finished building: ../src/main.cc'
+' '
+'Building target: Rx_OpenCM.elf'
+'Invoking: ARM v7 g++ linker'
+arm-none-eabi-g++ -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard -Wl,-build-id=none -specs=Xilinx.spec -Wl,-T -Wl,../src/lscript.ld -L../../Rx_OpenCM_bsp/ps7_cortexa9_0/lib -o "Rx_OpenCM.elf"  ./src/hexapod_leg/comm.o ./src/hexapod_leg/joint_controls.o  ./src/main.o   -lm -Wl,--start-group,-lxil,-lfreertos,-lgcc,-lc,-lstdc++,--end-group
+'Finished building target: Rx_OpenCM.elf'
+' '
+'Invoking: ARM v7 Print Size'
+arm-none-eabi-size Rx_OpenCM.elf  |tee "Rx_OpenCM.elf.size"
+   text	   data	    bss	    dec	    hex	filename
+ 103832	   4200	  89472	 197504	  30380	Rx_OpenCM.elf
+'Finished building: Rx_OpenCM.elf.size'
+' '
+
+14:23:10 Build Finished (took 2s.924ms)
+
